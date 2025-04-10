@@ -1,3 +1,4 @@
+inf = 100000000
 adj = [(0,-1),(0,1),(-1,0),(1,0),(-1,1),(1,-1)]
 
 def dfs(board,player_id: int) -> bool:
