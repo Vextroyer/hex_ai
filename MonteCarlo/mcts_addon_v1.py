@@ -1,6 +1,7 @@
+"""
+Use monte carlo tree search simulation as another heuristic.
+"""
 import math
-from platform import node
-import time
 import player
 import random
 
@@ -10,7 +11,7 @@ class Node:
         self.U: int = 0
         self.N: int = 0
         self.child: list[Node] = []
-        self.move: tuple[int,int,int] | None = None
+        self.move: tuple[int,int,int] = (-1,-1,-1)
         
         self.player_id = player_id
         self.parent: Node | None = parent
@@ -21,37 +22,37 @@ class Node:
     def UCB1(self):
         return self.U / self.N + self.sqrt2 * math.sqrt(math.log(self.parent.N,math.e) / self.N)
 
-class MonteCarloPlayer_v1(player.Player):
-    def __init__(self, player_id: int,time_limit=2):
+class MonteCarloAddonV1(player.Player):
+    def __init__(self, player_id: int):
         super().__init__(player_id)
-        self.time_limit = time_limit
     
-    def play(self, board: player.HexBoard) -> tuple:
-        return self.MonteCarloTreeSearch(board)
+    def play(self, board: player.HexBoard, iterations:int) -> float:
+        return self.MonteCarloTreeSearch(board,iterations)
     
-    def MonteCarloTreeSearch(self,board: player.HexBoard) -> tuple:
+    def MonteCarloTreeSearch(self,board: player.HexBoard,iterations:int) -> float:
         tree = Node(self.player_id,None)
-        start_time = time.time()
-        actual_time = time.time()
-        while actual_time - start_time < self.time_limit:
+        for _ in range(iterations):
             leaf = self.Select(tree)
             child = self.Expand(leaf,board)
             result = self.Simulate(child,board)
             self.BackPropagate(result,child)
-            actual_time = time.time()
         
-        best_value = 0
-        best_move = None
-        for child in tree.child:
-            if child.U / child.N > best_value:
-                best_value = child.U / child.N
-                best_move = child.move
-        return best_move[0],best_move[1]
+        return tree.U / tree.N
     
     def Select(self,node: Node) -> Node:
         while node.child:
             # Randomly select leaf node
-            node = random.choice(node.child)
+            #node = random.choice(node.child)
+            # Select according to UCB1
+            max_score = -1
+            best_child = node.child[0]
+            for child in node.child:
+                score = child.UCB1()
+                if score > max_score:
+                    max_score = score
+                    best_child = child
+            node = best_child
+
         return node
     
     def Expand(self,node: Node,board: player.HexBoard) -> Node:
@@ -64,8 +65,7 @@ class MonteCarloPlayer_v1(player.Player):
 
         move = random.choice(moves)
         
-        child = Node(self.other_player(node.player_id))
-        child.parent = node
+        child = Node(self.other_player(node.player_id),node)
         child.move = (move[0],move[1],node.player_id)
         node.child.append(child)
 
@@ -105,13 +105,13 @@ class MonteCarloPlayer_v1(player.Player):
 
 
     def apply_moves(self,node: Node,board: player.HexBoard):
-        while node.parent != None:
+        while node.parent:
             i,j,k = node.move
             board.board[i][j] = k
             node = node.parent
     
     def unapply_moves(self,node: Node,board: player.HexBoard):
-        while node.parent != None:
+        while node.parent:
             i,j,_ = node.move
             board.board[i][j] = 0
             node = node.parent

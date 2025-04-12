@@ -1,11 +1,14 @@
 # Agradecimientos a Pablo y Diego
 
 import os
+from MonteCarlo.mctsV2 import MonteCarloPlayerV2
+from a_star import AStar
 from beam_search_v_1 import KBeamSearchV1
 from beam_search_v_1_1 import KBeamSearchV1_1
 from hex_board import HexBoard
 from islify_v_1_2_2 import IslifyPlayerV1_2_2
-from random_player import RandomPlayer
+from minmax_player_v5 import MinmaxPlayerV5
+from MonteCarlo.random_player import RandomPlayer
 from minmax_player_v1 import MinmaxPlayerV1
 from minmax_player_v2 import MinmaxPlayerV2
 from minmax_player_v3 import MinmaxPlayerV3
@@ -13,7 +16,8 @@ from minmax_player_v4 import MinmaxPlayerV4
 from islify_v_1_2 import IslifyPlayerV1_2
 from Old.islify_v_1_2_1 import IslifyPlayerV1_2_1
 from islify_v_1_3 import IslifyPlayerV1_3
-from mcts import MonteCarloPlayer_v1
+from MonteCarlo.mcts import MonteCarloPlayerV1
+from search import Alfa
 
 
 def clear_console():
@@ -44,7 +48,7 @@ def main():
         }
     elif mode == "3":
         player_objects = {
-            1: KBeamSearchV1_1(1),  # IA
+            1: MonteCarloPlayerV2(1),  # IA
             2: RandomPlayer(2)   # IA
         }
     else:
@@ -83,25 +87,21 @@ def main():
                 continue
             board.place_piece(row, col, current_player)
         else:
-            # if current_player == 1:
-            #     print(player_objects[current_player].h(board))
-            #     print(player_objects[current_player].GetMovements(board))
             move = player_objects[current_player].play(board)
+            #if current_player == 1:
+            #    print(player_objects[current_player].last_score,player_objects[current_player].last_seen_moves)
             print(f"La IA juega en la posición: {move}")
             board.place_piece(move[0], move[1], current_player)
-            #time.sleep(1)
-        print(player_objects[1].h(board))
-        print(player_objects[1].GetMovements(board,current_player,player_objects[1].n_neighboor))
         input()
 
         # Cambiar turno
         current_player = 2 if current_player == 1 else 1
     
-    sum = 0
-    for x in player_objects[1].expected_value_of_depth:
-        sum += x
-    sum /= len(player_objects[1].expected_value_of_depth)
-    print("expected avalue of depth",sum)
+    #sum = 0
+    #for x in player_objects[1].expected_value_of_depth:
+    #    sum += x
+    #sum /= len(player_objects[1].expected_value_of_depth)
+    #print("expected avalue of depth",sum)
 
 if __name__ == "__main__":
     main()

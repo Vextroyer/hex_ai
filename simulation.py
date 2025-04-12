@@ -1,6 +1,6 @@
 
 from hex_board import HexBoard
-from random_player import RandomPlayer
+from MonteCarlo.random_player import RandomPlayer
 import random
 
 class Stat:

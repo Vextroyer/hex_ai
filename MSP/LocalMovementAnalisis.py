@@ -14,7 +14,9 @@ class LocalMovementAnalisis:
         self.n = size
 
         # The cost of the minimum cost path between the extremes of the board.
-        self.minimum_length = 0
+        self.min_cost = 0
+
+        self.min_cost_2 = 0
 
         # The total number of moves made on the board.
         self.total_moves = 0
@@ -36,15 +38,15 @@ class LocalMovementAnalisis:
 
         Returns the length of the shortest path that connects the extremes
 
-        Returns the amount of pieces on the board
+        Returns the amount of pieces on the board, which is equivalent to the total moves.
         """
 
         # This result is the same as the h heuristic function. It could be used.
-        min_lenght = self.calculate_minimum_lenght_path(board,player)
+        self.min_cost = self.calculate_minimum_cost_path(board,player)
 
         # Varios cells analisys: fn,e,ie
 
-        pieces = 0
+        self.total_moves = 0
 
         # Interior cells
         for i in range(1,self.n - 1):
@@ -55,7 +57,7 @@ class LocalMovementAnalisis:
                 self.e[i][j] = LocalPatterns.e(t,player)
                 self.ie[i][j] = LocalPatterns.ie(t,player)
 
-                pieces += 1 if board[i][j] else 0
+                self.total_moves += 1 if board[i][j] else 0
 
 
 
@@ -70,7 +72,7 @@ class LocalMovementAnalisis:
             self.e[top][i] = LocalPatterns.e(t,player)
             self.ie[top][i] = LocalPatterns.ie(t,player)
 
-            pieces += 1 if board[top][i] else 0
+            self.total_moves += 1 if board[top][i] else 0
 
             # Left
             left = 0
@@ -81,7 +83,7 @@ class LocalMovementAnalisis:
             self.e[i][left] = LocalPatterns.e(t,player)
             self.ie[i][left] = LocalPatterns.ie(t,player)
 
-            pieces += 1 if board[i][left] else 0
+            self.total_moves += 1 if board[i][left] else 0
 
             # Bottom
             bottom = self.n - 1
@@ -92,7 +94,7 @@ class LocalMovementAnalisis:
             self.e[bottom][i] = LocalPatterns.e(t,player)
             self.ie[bottom][i] = LocalPatterns.ie(t,player)
 
-            pieces += 1 if board[bottom][i] else 0
+            self.total_moves += 1 if board[bottom][i] else 0
 
             # Right
             right = self.n - 1
@@ -103,7 +105,7 @@ class LocalMovementAnalisis:
             self.e[i][right] = LocalPatterns.e(t,player)
             self.ie[i][right] = LocalPatterns.ie(t,player)
 
-            pieces += 1 if board[i][right] else 0
+            self.total_moves += 1 if board[i][right] else 0
 
         # Corner cells
         top = 0
@@ -119,7 +121,7 @@ class LocalMovementAnalisis:
         self.e[top][left] = LocalPatterns.e(t,player)
         self.ie[top][left] = LocalPatterns.ie(t,player)
         
-        pieces += 1 if board[top][left] else 0
+        self.total_moves += 1 if board[top][left] else 0
 
         # Bottom Left
 
@@ -129,7 +131,7 @@ class LocalMovementAnalisis:
         self.e[bottom][left] = LocalPatterns.e(t,player)
         self.ie[bottom][left] = LocalPatterns.ie(t,player)
 
-        pieces += 1 if board[bottom][left] else 0
+        self.total_moves += 1 if board[bottom][left] else 0
 
         # Bottom right
 
@@ -139,7 +141,7 @@ class LocalMovementAnalisis:
         self.e[bottom][right] = LocalPatterns.e(t,player)
         self.ie[bottom][right] = LocalPatterns.ie(t,player)
 
-        pieces += 1 if board[bottom][right] else 0
+        self.total_moves += 1 if board[bottom][right] else 0
 
         # Top Right
 
@@ -149,36 +151,35 @@ class LocalMovementAnalisis:
         self.e[top][right] = LocalPatterns.e(t,player)
         self.ie[top][right] = LocalPatterns.ie(t,player)
 
-        pieces += 1 if board[top][right] else 0
+        self.total_moves += 1 if board[top][right] else 0
 
         #Bridge Analisys
 
-        return min_lenght,pieces
+        return self.min_cost,self.total_moves
 
-    def calculate_minimum_lenght_path(self,board:list[list[int]],player:int)->int:
+    def calculate_minimum_cost_path(self,board:list[list[int]],player:int)->int:
         # Multiple source multiple destination minimum cost
         # Dijkstra Algorithm, moving to a cell of the same player has cost 0
         # Moving to a cell of diferent player has cost inf
         # Moving to an unnocupied cell has cost 1
         other_player = 3 - player
-        n = self.n
-        cost = [[inf for _ in range(n)] for _ in range(n)]
+        cost = [[inf for _ in range(self.n)] for _ in range(self.n)]
         q = []
         if player == 1:
             # Pon todos los vecinos del nodo de inicio en la cola
             # Lado izquierdo, board[0..n-1][0]
             # Lado derecho, board[0..n-1][n-1]
-            q = [(0 if board[i][0] == player else 1,i,0) for i in range(n) if board[i][0] != player]
+            q = [(0 if board[i][0] == player else 1,i,0) for i in range(self.n) if board[i][0] != other_player]
         else:
             # Lado superior, board[0][0...n-1]
             # Lado inferior, board[n-1][0...n-1]
-            q = [(0 if board[i][0] == player else 1,0,i) for i in range(n) if board[0][i] != player]
+            q = [(0 if board[0][i] == player else 1,0,i) for i in range(self.n) if board[0][i] != other_player]
         
         for c,i,j in q: cost[i][j] = c
         while q:
             c,i,j = heapq.heappop(q)
             for di,dj in adj:
-                if 0<=i+di<n and 0<=j+dj<n and board[i+di][j+dj] != other_player:
+                if 0<=i+di<self.n and 0<=j+dj<self.n and board[i+di][j+dj] != other_player:
                     if cost[i+di][j+dj] == inf:
                         cost[i+di][j+dj] = c if board[i+di][j+dj] == player else c + 1
                         heapq.heappush(q,(cost[i+di][j+dj],i+di,j+dj))
@@ -187,20 +188,66 @@ class LocalMovementAnalisis:
             # Pon todos los vecinos del nodo de inicio en la cola
             # Lado izquierdo, board[0..n-1][0]
             # Lado derecho, board[0..n-1][n-1]
-            min_length = min([cost[i][n-1] for i in range(n)])
+            min_length = min([cost[i][self.n-1] for i in range(self.n)])
         else:
             # Lado superior, board[0][0...n-1]
             # Lado inferior, board[n-1][0...n-1]
-            min_length = min([cost[n-1][i] for i in range(n)])
+            min_length = min([cost[self.n-1][i] for i in range(self.n)])
 
-        # There is no path, this is bad.
-        if min_length == inf:
-            return inf
+        # Candidates to remove to check conectivity
+        candidates = []
 
-        for i in range(n):
-            for j in range(n):
-                self.ml[i][j] = 1 if cost[i][j] <= min_length else 0
+        for i in range(self.n):
+            for j in range(self.n):
+                if min_length < inf and cost[i][j] <= min_length:
+                    self.ml[i][j] = 1
+                    if board[i][j] == 0:
+                        candidates.append((i,j))
+                else: self.ml[i][j] = 0
         
+        tmp = []
+        for i in range(random.randint(1,min(len(candidates),3)+1)):
+            tmp.append(random.choice(candidates))
+        
+        candidates = tmp
+
+        # 2nd run
+
+        cost = [[inf for _ in range(self.n)] for _ in range(self.n)]
+        q = []
+        if player == 1:
+            # Pon todos los vecinos del nodo de inicio en la cola
+            # Lado izquierdo, board[0..n-1][0]
+            # Lado derecho, board[0..n-1][n-1]
+            q = [(0 if board[i][0] == player else 1,i,0) for i in range(self.n) if board[i][0] != other_player]
+        else:
+            # Lado superior, board[0][0...n-1]
+            # Lado inferior, board[n-1][0...n-1]
+            q = [(0 if board[0][i] == player else 1,0,i) for i in range(self.n) if board[0][i] != other_player]
+        
+        for c,i,j in q: cost[i][j] = c
+        while q:
+            c,i,j = heapq.heappop(q)
+            if (i,j) in candidates: continue
+            for di,dj in adj:
+                if 0<=i+di<self.n and 0<=j+dj<self.n and board[i+di][j+dj] != other_player:
+                    if cost[i+di][j+dj] == inf:
+                        cost[i+di][j+dj] = c if board[i+di][j+dj] == player else c + 1
+                        heapq.heappush(q,(cost[i+di][j+dj],i+di,j+dj))
+
+        min_cost_2 = inf
+        if player == 1:
+            # Pon todos los vecinos del nodo de inicio en la cola
+            # Lado izquierdo, board[0..n-1][0]
+            # Lado derecho, board[0..n-1][n-1]
+            min_cost_2 = min([cost[i][self.n-1] for i in range(self.n)])
+        else:
+            # Lado superior, board[0][0...n-1]
+            # Lado inferior, board[n-1][0...n-1]
+            min_cost_2 = min([cost[self.n-1][i] for i in range(self.n)])
+
+        self.min_cost_2 = min_cost_2
+
         return min_length
 
     def rank(self,row,col):
