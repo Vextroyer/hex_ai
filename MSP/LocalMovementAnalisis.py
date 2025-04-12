@@ -30,6 +30,9 @@ class LocalMovementAnalisis:
         # Score for inverse explotaition, {0,1}
         self.ie = [[0 for i in range(self.n)] for i in range(self.n)]
 
+        # Average Score of board, the bigger the better
+        self.ave_score = 0
+
     def analize(self,board:list[list[int]],player:int)->tuple[int,int]:
         """
         Run local analisis on the provided board for the given player.
@@ -153,7 +156,14 @@ class LocalMovementAnalisis:
 
         self.total_moves += 1 if board[top][right] else 0
 
+
+        for i in range(self.n):
+            for j in range(self.n):
+                self.ave_score += self.rank(i,j)
+        self.ave_score -= random.uniform(0,0.1) * self.n * self.n
+        self.ave_score /= self.n * self.n
         #Bridge Analisys
+        # Pendant
 
         return self.min_cost,self.total_moves
 
@@ -194,66 +204,16 @@ class LocalMovementAnalisis:
             # Lado inferior, board[n-1][0...n-1]
             min_length = min([cost[self.n-1][i] for i in range(self.n)])
 
-        # Candidates to remove to check conectivity
-        candidates = []
-
         for i in range(self.n):
             for j in range(self.n):
-                if min_length < inf and cost[i][j] <= min_length:
-                    self.ml[i][j] = 1
-                    if board[i][j] == 0:
-                        candidates.append((i,j))
-                else: self.ml[i][j] = 0
-        
-        tmp = []
-        for i in range(random.randint(1,min(len(candidates),3)+1)):
-            tmp.append(random.choice(candidates))
-        
-        candidates = tmp
-
-        # 2nd run
-
-        cost = [[inf for _ in range(self.n)] for _ in range(self.n)]
-        q = []
-        if player == 1:
-            # Pon todos los vecinos del nodo de inicio en la cola
-            # Lado izquierdo, board[0..n-1][0]
-            # Lado derecho, board[0..n-1][n-1]
-            q = [(0 if board[i][0] == player else 1,i,0) for i in range(self.n) if board[i][0] != other_player]
-        else:
-            # Lado superior, board[0][0...n-1]
-            # Lado inferior, board[n-1][0...n-1]
-            q = [(0 if board[0][i] == player else 1,0,i) for i in range(self.n) if board[0][i] != other_player]
-        
-        for c,i,j in q: cost[i][j] = c
-        while q:
-            c,i,j = heapq.heappop(q)
-            if (i,j) in candidates: continue
-            for di,dj in adj:
-                if 0<=i+di<self.n and 0<=j+dj<self.n and board[i+di][j+dj] != other_player:
-                    if cost[i+di][j+dj] == inf:
-                        cost[i+di][j+dj] = c if board[i+di][j+dj] == player else c + 1
-                        heapq.heappush(q,(cost[i+di][j+dj],i+di,j+dj))
-
-        min_cost_2 = inf
-        if player == 1:
-            # Pon todos los vecinos del nodo de inicio en la cola
-            # Lado izquierdo, board[0..n-1][0]
-            # Lado derecho, board[0..n-1][n-1]
-            min_cost_2 = min([cost[i][self.n-1] for i in range(self.n)])
-        else:
-            # Lado superior, board[0][0...n-1]
-            # Lado inferior, board[n-1][0...n-1]
-            min_cost_2 = min([cost[self.n-1][i] for i in range(self.n)])
-
-        self.min_cost_2 = min_cost_2
+                self.ml[i][j] = 1 if min_length < inf and cost[i][j] <= min_length else 0
 
         return min_length
 
     def rank(self,row,col):
         """
         Get the value of the cell according to local analisis.
-        rank(cell) = ml(cell) + e(cell) + ie(cell) + U~(0,0.5)
+        rank(cell) = ml(cell) + e(cell) + ie(cell) + U~(0,0.1)
 
         Remember to analize a board before calling rank, otherwise another board results may be used.
         """

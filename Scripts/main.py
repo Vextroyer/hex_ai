@@ -1,23 +1,11 @@
 # Agradecimientos a Pablo y Diego
 
 import os
-from MonteCarlo.mctsV2 import MonteCarloPlayerV2
-from astar.a_star import AStar
-from beam_search_v_1 import KBeamSearchV1
-from beam_search_v_1_1 import KBeamSearchV1_1
+from beam.beam_search_v_1_1 import KBeamSearchV1_1
+from beam.beam_search_v_1 import KBeamSearchV1
+from beam.beam_search_v_1_2 import KBeamSearchV1_2
 from hex_board import HexBoard
-from islify_v_1_2_2 import IslifyPlayerV1_2_2
-from minmax_player_v5 import MinmaxPlayerV5
 from MonteCarlo.random_player import RandomPlayer
-from minmax_player_v1 import MinmaxPlayerV1
-from minmax_player_v2 import MinmaxPlayerV2
-from minmax_player_v3 import MinmaxPlayerV3
-from minmax_player_v4 import MinmaxPlayerV4
-from islify_v_1_2 import IslifyPlayerV1_2
-from Old.islify_v_1_2_1 import IslifyPlayerV1_2_1
-from islify_v_1_3 import IslifyPlayerV1_3
-from MonteCarlo.mcts import MonteCarloPlayerV1
-from Old.search import Alfa
 
 
 def clear_console():
@@ -48,7 +36,7 @@ def main():
         }
     elif mode == "3":
         player_objects = {
-            1: MonteCarloPlayerV2(1),  # IA
+            1: KBeamSearchV1(1),  # IA
             2: RandomPlayer(2)   # IA
         }
     else:

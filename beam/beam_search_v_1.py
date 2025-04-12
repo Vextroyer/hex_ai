@@ -18,7 +18,7 @@ class KBeamSearchV1(player.Player):
     Implements Islify heuristic function.
     Implements CenterDomination as part of movement selection policy (MSP)
     """
-    def __init__(self, player_id: int,time_limit=2,k_best=6,n_neighboor=12,estados_guardados=None):
+    def __init__(self, player_id: int,time_limit=2,k_best=6,n_neighboor=12):
         super().__init__(player_id)
         self.other_player_id = 3 - self.player_id
         self.inf = 100000000

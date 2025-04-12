@@ -7,7 +7,7 @@ import heapq
 
 class Alfa(player.Player):
     """
-    K beam serach mantains at all times the best k search candidate states in memory.
+    K beam seach mantains at all times the best k search candidate states in memory.
     It then expands the best candidate.
     The score of the new candidates is calculated.
     Then from the previous states and the new ones the best k are maintained and the rest

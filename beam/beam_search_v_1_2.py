@@ -5,7 +5,7 @@ import player as player
 import time
 import heapq
 
-class KBeamSearchV1_1(player.Player):
+class KBeamSearchV1_2(player.Player):
     """
     K beam serach mantains at all times the best k search candidate states in memory.
     It then expands the best candidate.
@@ -60,8 +60,8 @@ class KBeamSearchV1_1(player.Player):
         return self.beam_search(board)
 
     def beam_search(self,board: player.HexBoard):
-        # The score of the board, the board, the list of movements that lead to the board.
-        states = [(0,board,[],self.player_id)]
+        # The score of the board, the board, the move that lead to the board.
+        states = [(0,board,(),self.player_id)]
         best_move = ()
         
         # Benchmark
@@ -74,21 +74,21 @@ class KBeamSearchV1_1(player.Player):
 
         
         while not self.TimeBreak() and states:
-            score,actual,moves,player = states.pop(0)
-            best_move = moves[0] if moves else ()
-            
+            score,actual,move,player = heapq.heappop(states)
+            best_move = move
             #Benchmark
             # best_chain = moves if moves else []
 
-            new_states = self.Expand(actual,moves,player)
-            states += new_states
-            states = heapq.nlargest(self.k_best,states)
+            new_states = self.Expand(actual,move,player)
+            heapq.heapify(new_states)
+            states = heapq.merge(states,new_states)
+            states = heapq.nsmallest(self.k_best,states)
 
         # self.expected_value_of_depth.append(len(best_chain))
         
         return best_move
 
-    def Expand(self,board: player.HexBoard,chain_of_moves,player):
+    def Expand(self,board: player.HexBoard,starter_move,player):
         """
         Given a board return a new list of boards with their associated score.
         """
@@ -103,14 +103,14 @@ class KBeamSearchV1_1(player.Player):
             if i == self.expand_limit: break
             new_board = board.clone()
             new_board.place_piece(move[0],move[1],player)
-            new_chain_of_moves = chain_of_moves + [move]
+            if not starter_move: starter_move = move
             score = self.h(min_len,total_moves) + random.uniform(0,0.1)
             new_player = 3 - player
-            states.append((score,new_board,new_chain_of_moves,new_player))
+            states.append((score,new_board,starter_move,new_player))
         return states
 
     def h(self,minimum_length:int,total_moves:int):
-        return - (2 * minimum_length + total_moves)
+        return 8 * minimum_length
 
     def GetMovements(self,board:player.HexBoard,player:int):
         """
