@@ -1,13 +1,16 @@
-import player
-
-class MinmaxPlayerV3(player.Player):
+import player as player
+import time
+class MinmaxPlayerV4(player.Player):
     """
     MinMax player with alpha-beta prunning.
+    Also supports a time limit.
     """
-    def __init__(self, player_id: int):
+    def __init__(self, player_id: int,time_limit=2):
         super().__init__(player_id)
         self.other_player_id = 3 - self.player_id
         self.inf = 100000000
+        self.time_limit = time_limit
+        self.start_playing = 0
 
     def minmax(self,board: player.HexBoard)->tuple:
         tmp_board = board.clone()     
@@ -29,6 +32,7 @@ class MinmaxPlayerV3(player.Player):
                 min_value_move = move
                 beta = value
             if value <= alpha: break
+            if self.TimeBreak(): break
         return (min_value,min_value_move)            
 
     def _max(self,board: player.HexBoard,alpha,beta)->tuple:
@@ -45,16 +49,18 @@ class MinmaxPlayerV3(player.Player):
                 max_value = value
                 max_value_move = move
                 alpha = max(alpha,value)
-            if value >= beta: break                
+            if value >= beta: break     
+            if self.TimeBreak(): break           
         return (max_value,max_value_move)
 
     def play(self, board: player.HexBoard) -> tuple:
+        self.start_playing = time.time()
         return self.minmax(board)
 
     def h(self,board: player.HexBoard,terminal: int):
         """
         Heuristic function.
-        The less pieces the better for the win, the better.
+        The less pieces for the win, the better.
         The more pieces for the lose, the better.
         """
         pieces = 0
@@ -67,7 +73,7 @@ class MinmaxPlayerV3(player.Player):
             for i in range(board.size):
                 for j in range(board.size):
                     pieces += 1 if board.board[i][j] == self.other_player_id else 0
-            return - 1 / pieces
+            return - 1 * pieces
 
     def IsTerminal(self,board: player.HexBoard):
         """
@@ -78,3 +84,6 @@ class MinmaxPlayerV3(player.Player):
         if board.check_connection(self.player_id) : return 1
         elif board.check_connection(self.other_player_id): return -1
         else: return 0
+    
+    def TimeBreak(self) -> bool:
+        return True if time.time() - self.start_playing >= self.time_limit else False

@@ -1,6 +1,6 @@
 import random
 from MSP.CenterDomination import CenterDomination
-import player
+import player as player
 import time
 from utils import adj
 import heapq

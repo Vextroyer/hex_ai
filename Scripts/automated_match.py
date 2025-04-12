@@ -12,7 +12,7 @@ from minmax_player_v4 import MinmaxPlayerV4
 from minmax_player_v5 import MinmaxPlayerV5
 from MonteCarlo.random_player import RandomPlayer
 from MonteCarlo.random_player_v2 import RandomPlayerV2
-from search import Alfa
+from Old.search import Alfa
 
 def match(playerA,playerB,size,runs):
     startA = runs//2

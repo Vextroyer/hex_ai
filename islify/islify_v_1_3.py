@@ -1,16 +1,15 @@
-from MSP.CenterDomination import CenterDomination
-import player
+import player as player
 import time
 from utils import adj
 import heapq
-class IslifyPlayerV1_2_2(player.Player):
+class IslifyPlayerV1_3(player.Player):
     """
     MinMax player with alpha-beta prunning.
     Also supports a time limit.
     Also supports a depth limit for recursion.
 
     Implements Islify heuristic function.
-    Implements CenterDomination as part of movement selection policy (MSP)
+    Implements Islify atravesao heuristic function.
     """
     def __init__(self, player_id: int,time_limit=2,depth_limit=2):
         super().__init__(player_id)
@@ -19,13 +18,6 @@ class IslifyPlayerV1_2_2(player.Player):
         self.depth_limit=depth_limit
         self.time_limit = time_limit
         self.start_playing = 0
-        self.gmsp = None
-
-    def play(self, board: player.HexBoard) -> tuple:
-        self.start_playing = time.time()
-        if self.gmsp == None:
-            self.gmsp = CenterDomination(board.size)
-        return self.minmax(board)
 
     def minmax(self,board: player.HexBoard)->tuple:
         tmp_board = board.clone()     
@@ -35,7 +27,7 @@ class IslifyPlayerV1_2_2(player.Player):
     def _min(self,board: player.HexBoard,alpha,beta,depth)->tuple:
         if depth == self.depth_limit:
             return (self.h(board),None)
-        moves = self.GetMovements(board)
+        moves = board.get_possible_moves()
         if not moves:
             if board.check_connection(self.player_id): return (0,None)
             return (-self.inf,None)
@@ -56,7 +48,7 @@ class IslifyPlayerV1_2_2(player.Player):
     def _max(self,board: player.HexBoard,alpha,beta,depth)->tuple:
         if depth==self.depth_limit:
             return (self.h(board),None)
-        moves = self.GetMovements(board)
+        moves = board.get_possible_moves()
         if not moves:
             if board.check_connection(self.player_id): return (0,None)
             return (-self.inf,None)
@@ -74,14 +66,27 @@ class IslifyPlayerV1_2_2(player.Player):
             if self.TimeBreak(): break           
         return (max_value,max_value_move)
 
+    def play(self, board: player.HexBoard) -> tuple:
+        self.start_playing = time.time()
+        return self.minmax(board)
+
     def h(self,board: player.HexBoard):
         """
-        Islify heuristic function.
+        Islify atravesao heuristic function.
+        Compute hA(n) - hB(n)
         """
+        return  self.islify_h(board,self.player_id) - self.islify_h(board,self.other_player_id)
+
+    def islify_h(self,board: player.HexBoard,player_id):
+        """
+        Islify heuristic function.
+        Es admisible.
+        """
+        other_player_id = 3 - player_id
         n = len(board.board)
         cost = [[self.inf] * n for _ in range(n)]
         q = []
-        if self.player_id == 1:
+        if player_id == 1:
             # Pon todos los vecinos del nodo de inicio en la cola
             # Lado izquierdo, board[0..n-1][0]
             # Lado derecho, board[0..n-1][n-1]
@@ -95,12 +100,12 @@ class IslifyPlayerV1_2_2(player.Player):
         while q:
             c,i,j = heapq.heappop(q)
             for di,dj in adj:
-                if 0<=i+di<n and 0<=j+dj<n and board.board[i+di][j+dj] != self.other_player_id:
+                if 0<=i+di<n and 0<=j+dj<n and board.board[i+di][j+dj] != other_player_id:
                     if cost[i+di][j+dj] == self.inf:
-                        cost[i+di][j+dj] = c if board.board[i+di][j+dj] == self.player_id else c + 1
+                        cost[i+di][j+dj] = c if board.board[i+di][j+dj] == player_id else c + 1
                         heapq.heappush(q,(cost[i+di][j+dj],i+di,j+dj))
         
-        if self.player_id == 1:
+        if player_id == 1:
             # Pon todos los vecinos del nodo de inicio en la cola
             # Lado izquierdo, board[0..n-1][0]
             # Lado derecho, board[0..n-1][n-1]
@@ -111,22 +116,5 @@ class IslifyPlayerV1_2_2(player.Player):
             return  -min([cost[n-1][i] for i in range(n)])
 
 
-    def GetMovements(self,board:player.HexBoard,limit=None):
-        """
-        Retorna los posibles movimientos segun la politica empleada.
-        """
-        moves = [(self.rank(move),move) for move in board.get_possible_moves()]
-        if limit:
-            return [move for _,move in heapq.nlargest(limit,moves)]
-        else:
-            moves.sort(reverse=True)
-            return [move for _,move in moves]
-
-    def rank(self,move):
-        """
-        Calcula para cada movimiento cuan bueno es
-        """
-        w = [0.5,0.5]
-        return w[0] * self.gmsp.rank(move[0],move[1])
     def TimeBreak(self) -> bool:
         return True if time.time() - self.start_playing >= self.time_limit - 0.2 else False

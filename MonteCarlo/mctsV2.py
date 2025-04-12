@@ -5,7 +5,7 @@ Reuses previously calculated results. Instanciate once and play a lot.
 """
 import math
 import time
-import player
+import player as player
 import random
 
 class Node:

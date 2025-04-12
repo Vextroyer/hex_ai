@@ -1,7 +1,7 @@
 import heapq
 from MSP.CenterDomination import CenterDomination
 from MSP.LocalMovementAnalisis import LocalMovementAnalisis
-import player
+import player as player
 import time
 from utils import inf
 class MinmaxPlayerV5(player.Player):

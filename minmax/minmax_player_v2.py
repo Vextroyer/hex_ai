@@ -1,4 +1,4 @@
-import player
+import player as player
 
 class MinmaxPlayerV2(player.Player):
     def __init__(self, player_id: int):

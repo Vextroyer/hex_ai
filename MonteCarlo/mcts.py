@@ -3,7 +3,7 @@ Monte Carlo Tree Search with UCB1 selection policy.
 """
 import math
 import time
-import player
+import player as player
 import random
 
 class Node:

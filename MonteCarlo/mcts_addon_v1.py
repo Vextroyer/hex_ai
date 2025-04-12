@@ -2,7 +2,7 @@
 Use monte carlo tree search simulation as another heuristic.
 """
 import math
-import player
+import player as player
 import random
 
 class Node:

@@ -1,12 +1,18 @@
 import random
 from MSP.CenterDomination import CenterDomination
 from MSP.LocalMovementAnalisis import LocalMovementAnalisis
-import player
+import player as player
 import time
 import heapq
 
-class AStar(player.Player):
+class Alfa(player.Player):
     """
+    K beam serach mantains at all times the best k search candidate states in memory.
+    It then expands the best candidate.
+    The score of the new candidates is calculated.
+    Then from the previous states and the new ones the best k are maintained and the rest
+    is discarded.
+
     Supports a time limit for exiting.
 
     Implements CenterDomination as part of movement selection policy (MSP)
@@ -53,12 +59,11 @@ class AStar(player.Player):
             self.local_analizer = LocalMovementAnalisis(board.size)
             self.expand_limit = int(1.5 * board.size)
             #self.k_best = 3 * board.size * board.size // 8
-            #self.k_best = 5 + int(board.size ** (0.5))
-            self.k_best = 10000
+            self.k_best = 5 + int(board.size ** (0.5))
         
-        return self.search(board)
+        return self.beam_search(board)
 
-    def search(self,board: player.HexBoard):
+    def beam_search(self,board: player.HexBoard):
         # A state consist of (score,id,player,move,board)
         # Where score is the score of the board
         # Id uniquely identifies a state
@@ -67,7 +72,6 @@ class AStar(player.Player):
         # board is ...
         
         states = self.Expand(self.player_id,(),board)
-        heapq.heapify(states)
         best_move = ()
         
         # # Benchmark
@@ -78,12 +82,11 @@ class AStar(player.Player):
 
         
         while not self.TimeBreak() and states:
-            _,_,player,first_move,actual = heapq.heappop(states)
+            _,_,player,first_move,actual = states.pop(0)
             best_move = first_move
             new_states = self.Expand(player,first_move,actual)
-            heapq.heapify(new_states)
-            states = list(heapq.merge(states,new_states))
-            if len(states) > self.k_best: states = heapq.nsmallest(self.k_best,states) 
+            states += new_states
+            states = heapq.nlargest(self.k_best,states)
         
         return best_move
 
@@ -108,7 +111,7 @@ class AStar(player.Player):
         return states
 
     def h(self,minimum_cost:int,total_moves:int):
-        return total_moves + 2 * minimum_cost
+        return - (minimum_cost + self.local_analizer.min_cost_2 + total_moves)
 
     def GetMovements(self,board:player.HexBoard,player:int):
         """

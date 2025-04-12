@@ -6,7 +6,7 @@ It then consider at most k random moves from the list.
 Then for each move it calculates the possible win ratio of the move using MonteCarloTreeSearch for simulation.
 Finally it does the best move according to the simulation.
 """
-import player
+import player as player
 import random
 from MonteCarlo.mcts_addon_v1 import MonteCarloAddonV1
 

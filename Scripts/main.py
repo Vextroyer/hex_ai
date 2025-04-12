@@ -2,7 +2,7 @@
 
 import os
 from MonteCarlo.mctsV2 import MonteCarloPlayerV2
-from a_star import AStar
+from astar.a_star import AStar
 from beam_search_v_1 import KBeamSearchV1
 from beam_search_v_1_1 import KBeamSearchV1_1
 from hex_board import HexBoard
@@ -17,7 +17,7 @@ from islify_v_1_2 import IslifyPlayerV1_2
 from Old.islify_v_1_2_1 import IslifyPlayerV1_2_1
 from islify_v_1_3 import IslifyPlayerV1_3
 from MonteCarlo.mcts import MonteCarloPlayerV1
-from search import Alfa
+from Old.search import Alfa
 
 
 def clear_console():
