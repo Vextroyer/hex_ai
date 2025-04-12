@@ -41,8 +41,6 @@ class MonteCarloAddonV1(player.Player):
     
     def Select(self,node: Node) -> Node:
         while node.child:
-            # Randomly select leaf node
-            #node = random.choice(node.child)
             # Select according to UCB1
             max_score = -1
             best_child = node.child[0]
